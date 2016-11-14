@@ -57,14 +57,14 @@ class AssetUpdate extends Command {
 
         var_dump($matches);
 
-        if (!Storage::exists('eve/assets')) {
-            Storage::makeDirectory('eve/assets', 0755, true);
+        if (!Storage::exists('public/eve/assets')) {
+            Storage::makeDirectory('public/eve/assets', 0755, true);
         }
 
         foreach($matches[1] as $match) {
             $urlParts = parse_url($match);
 
-            $savePath = $this->getLocalStoragePath('eve/assets/' . basename($urlParts['path']));
+            $savePath = $this->getLocalStoragePath('public/eve/assets/' . basename($urlParts['path']));
 
             $this->info('Downloading ' . basename($urlParts['path']));
             $res = $client->request('GET', $match, array(
@@ -105,7 +105,7 @@ class AssetUpdate extends Command {
 
             $zippy = \Alchemy\Zippy\Zippy::load();
             $archive = $zippy->open($savePath);
-            $archive->extract($this->getLocalStoragePath('eve/assets'));
+            $archive->extract($this->getLocalStoragePath('public/eve/assets'));
 
             File::delete($savePath);
         }
