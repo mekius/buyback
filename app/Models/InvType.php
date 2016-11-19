@@ -25,6 +25,6 @@ class InvType extends Model {
      */
     public function marketItem()
     {
-        return $this->hasOne('MarketItem', 'typeId', 'typeID');
+        return $this->hasOne('\App\Models\MarketItem', 'typeId', 'typeID');
     }
 }

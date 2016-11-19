@@ -15,7 +15,7 @@ class MarketItem extends Model {
 
     public function type()
     {
-        return $this->belongsTo('InvType', 'typeId', 'typeID');
+        return $this->belongsTo('\App\Models\InvType', 'typeId', 'typeID');
     }
 
     /**

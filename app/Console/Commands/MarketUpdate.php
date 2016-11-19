@@ -50,12 +50,12 @@ class MarketUpdate extends Command {
             $this->error('Failed to find typeIds');
         }
 
-        $system = MapSolarSystem::where(array('solarSystemName' => $system))->first();
+        $system = MapSolarSystem::where(['solarSystemName' => $system])->first();
 
         $this->info("Updating market data based on {$system->solarSystemName} ({$system->solarSystemID})");
         $this->info("------------------------------------------------");
 
-        $types = array();
+        $types = [];
         /** @var $type InvType */
         foreach($invTypes as $type) {
             $types[$type->typeID] = $type->typeName;
@@ -69,7 +69,7 @@ class MarketUpdate extends Command {
         foreach ($results as $typeId => $data) {
             $this->info("Updating {$types[$typeId]} ($typeId)");
 
-            $marketItem = MarketItem::firstOrNew(array('typeId' => $typeId));
+            $marketItem = MarketItem::firstOrNew(['typeId' => $typeId]);
             $marketItem->updateFromEveCentral($data);
             $marketItem->save();
         }

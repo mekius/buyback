@@ -12,7 +12,7 @@ return [
     | any other location as required by the application or its packages.
     */
 
-    'name' => 'Laravel',
+    'name' => 'Asset Buy Back',
 
     /*
     |--------------------------------------------------------------------------
@@ -181,7 +181,13 @@ return [
         /*
          * IDE Helper Provider
          */
-        Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class
+        Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
+
+        /*
+         * Socialite Providers
+         */
+        SocialiteProviders\Manager\ServiceProvider::class,
+        SocialiteProviders\Generators\GeneratorsServiceProvider::class
     ],
 
     /*
@@ -229,7 +235,7 @@ return [
         'URL' => Illuminate\Support\Facades\URL::class,
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
-
+        'Socialite' => Laravel\Socialite\Facades\Socialite::class
     ],
 
 ];

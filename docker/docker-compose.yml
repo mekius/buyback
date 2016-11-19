@@ -1,0 +1,45 @@
+version: '2'
+
+services:
+  docroot:
+    image: tianon/true
+    volumes:
+      - '../:/app'
+  web:
+    image: webdevops/apache:alpine-3
+    links:
+      - php
+      - redis
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes_from:
+      - docroot
+    environment:
+      WEB_DOCUMENT_ROOT: /app/public
+      WEB_ALIAS_DOMAIN: buyback.local
+      WEB_PHP_SOCKET: php:9000
+  php:
+    image: webdevops/php-dev:alpine-3
+    links:
+      - db
+    volumes_from:
+      - docroot
+    environment:
+      WEB_DOCUMENT_ROOT: /app/public
+      WEB_ALIAS_DOMAIN: buyback.local
+      XDEBUG_REMOTE_CONNECT_BACK: 0
+      XDEBUG_REMOTE_HOST: "10.0.75.1"
+      XDEBUG_REMOTE_PORT: 9000
+  db:
+    image: mysql:5
+    volumes:
+      - './mysql:/var/lib/mysql'
+      - './db-scripts:/docker-entrypoint-initdb.d'
+    environment:
+      MYSQL_DATABASE: buybak
+      MYSQL_ROOT_PASSWORD: buyback
+      MSYQL_USER: buyback
+      MYSQL_PASSWORD: buyback
+  redis:
+    image: redis:alpine

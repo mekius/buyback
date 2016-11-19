@@ -57,7 +57,8 @@ class SDEUpdate extends Command {
         $dumpPath = $this->getLocalStoragePath('sde/' . $config['dump']);
 
         // Check for existing dump file and validate if it's out of date or not.
-        if (File::exists($dumpPath) && !$this->option('force')) {
+        $dumpValid = false;
+        if (File::exists($dumpPath)) {
             $res = $client->request('GET', $config['web_url'] . $config['check']);
 
             if ($res->getStatusCode() !== 200) {
@@ -69,42 +70,51 @@ class SDEUpdate extends Command {
             $hash = md5_file($dumpPath);
 
             if ($check === $hash) {
+                $dumpValid = true;
                 $this->info('No new data available');
-                return;
+
+                if (!$this->option('force')) {
+                    return;
+                }
             }
         }
 
-        $webUrl = $config['web_url'] . $config['dump'];
-        $this->info("Downloading dump file: $webUrl");
-        $res = $client->request('GET', $webUrl, array(
-            'sink' => $dumpPath,
-            'progress' => function($dlTotal, $dlCurrent, $ulTotal, $ulCurrent) {
-                static $progressBar = null;
+        if (!$dumpValid) {
+            $webUrl = $config['web_url'] . $config['dump'];
+            $this->info("Downloading dump file: $webUrl");
+            $res = $client->request('GET', $webUrl, [
+                'sink' => $dumpPath,
+                'progress' => function($dlTotal, $dlCurrent, $ulTotal, $ulCurrent) {
+                    static $progressBar = null;
 
-                if (!$dlTotal) {
-                    return;
+                    if (!$dlTotal) {
+                        return;
+                    }
+
+                    if ($progressBar === null) {
+                        $progressBar = $this->output->createProgressBar();
+                        $progressBar->setFormat("[%bar%] %current%MB/%max%MB %percent:3s%% %elapsed:6s%/%estimated:-6s%");
+                        $progressBar->start($dlTotal / 1024 / 1024);
+                    }
+
+                    $progressBar->setProgress($dlCurrent / 1024 / 1024);
+
+                    if ($dlCurrent >= $dlTotal) {
+                        $progressBar->finish();
+                        $this->info('');
+                    }
                 }
-
-                if ($progressBar === null) {
-                    $progressBar = $this->output->createProgressBar();
-                    $progressBar->setFormat("[%bar%] %current%MB/%max%MB %percent:3s%% %elapsed:6s%/%estimated:-6s%");
-                    $progressBar->start($dlTotal / 1024 / 1024);
-                }
-
-                $progressBar->setProgress($dlCurrent / 1024 / 1024);
-
-                if ($dlCurrent >= $dlTotal) {
-                    $progressBar->finish();
-                    $this->info('');
-                }
+            ]);
+            if (($res->getStatusCode() !== 200) || !File::exists($dumpPath)) {
+                $this->error('Failed to download dump file');
             }
-        ));
-        if (($res->getStatusCode() !== 200) || !File::exists($dumpPath)) {
-            $this->error('Failed to download dump file');
         }
 
         $this->info('Extracting ' . basename($dumpPath));
 
+        if (Storage::exists('sde/extracted')) {
+            Storage::deleteDirectory('sde/extracted');
+        }
         Storage::makeDirectory('sde/extracted');
 
         $zippy = \Alchemy\Zippy\Zippy::load();
@@ -162,10 +172,10 @@ class SDEUpdate extends Command {
 
         // try to save mem.
         $sql = "";
-        $output = array();
+        $output = [];
 
         // we don't actually care about the matches preg gives us.
-        $matches = array();
+        $matches =[];
 
         // this is faster than calling count($oktens) every time thru the loop.
         $token_count = count($tokens);

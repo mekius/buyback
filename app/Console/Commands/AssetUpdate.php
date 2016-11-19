@@ -52,7 +52,7 @@ class AssetUpdate extends Command {
 
         $res = $client->request('GET', $config['web_url']);
 
-        $matches = array();
+        $matches = [];
         preg_match_all('/' . $config['pattern'] . '/', $res->getBody(), $matches);
 
         var_dump($matches);
@@ -67,7 +67,7 @@ class AssetUpdate extends Command {
             $savePath = $this->getLocalStoragePath('public/eve/assets/' . basename($urlParts['path']));
 
             $this->info('Downloading ' . basename($urlParts['path']));
-            $res = $client->request('GET', $match, array(
+            $res = $client->request('GET', $match, [
                 'sink' => $savePath,
                 'progress' => function($dlTotal, $dlCurrent, $ulTotal, $ulCurrent) {
                     static $progressBar = null;
@@ -94,7 +94,7 @@ class AssetUpdate extends Command {
                         $progressBar->setProgress($dlCurrent / 1024 / 1024);
                     }
                 }
-            ));
+            ]);
 
             if (($res->getStatusCode() !== 200) || !File::exists($savePath)) {
                 $this->error('Failed to download dump file');
