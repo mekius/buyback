@@ -20,11 +20,13 @@ services:
       WEB_ALIAS_DOMAIN: buyback.local
       WEB_PHP_SOCKET: php:9000
   php:
-    image: webdevops/php-dev:alpine-3
+    image: webdevops/php-dev:alpine-3-php7
     links:
       - db
     volumes_from:
       - docroot
+    volumes:
+      - "./php.ini:/etc/php7/conf.d/zzzz-buyback.ini"
     environment:
       WEB_DOCUMENT_ROOT: /app/public
       WEB_ALIAS_DOMAIN: buyback.local
